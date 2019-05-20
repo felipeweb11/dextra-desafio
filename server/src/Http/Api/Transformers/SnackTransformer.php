@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Api\Transformers;
+
+use App\SnackSale\Domain\Model\Snack\Snack;
+use App\SnackSale\Domain\Model\Snack\SnackPriceCalculator;
+use League\Fractal;
+
+class SnackTransformer extends Fractal\TransformerAbstract {
+
+    protected $availableIncludes = [
+        'ingredients'
+    ];
+
+    private $priceCalculator;
+
+    public function __construct(SnackPriceCalculator $priceCalculator)
+    {
+        $this->priceCalculator = $priceCalculator;
+    }
+
+    public function transform(Snack $menu)
+    {
+        return [
+            'id' => $menu->getId(),
+            'name' => $menu->getName()
+        ];
+    }
+
+    public function includeIngredients(Snack $snack)
+    {
+        return $this->collection($snack->getIngredients(), new SnackIngredientTransformer);
+    }
+
+}
