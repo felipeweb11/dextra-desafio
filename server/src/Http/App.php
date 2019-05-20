@@ -60,7 +60,8 @@ class App
 
         $this->container->add(SnackPriceCalculator::class, function() {
             $promotions = $this->container->get(PromotionRepository::class)->all();
-            return new PromotionalSnackPriceCalculator(new IngredientSumSnackPriceCalculator(), $promotions);
+            $baseCalculator = new IngredientSumSnackPriceCalculator;
+            return new PromotionalSnackPriceCalculator($baseCalculator, $promotions);
         });
     }
 
