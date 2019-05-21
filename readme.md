@@ -47,3 +47,11 @@ docker-compose up
 
 Por fim, em um navegador web acessar a aplicação em http://127.0.0.1/
 
+#### Testes
+
+Para a execução dos testes, rodar o script run-tests.sh que se encontra na raiz da app.
+Também por questão de tempo não pude configurar o circle-ci para integração dos testes.
+
+```
+./run-tests.sh
+```
