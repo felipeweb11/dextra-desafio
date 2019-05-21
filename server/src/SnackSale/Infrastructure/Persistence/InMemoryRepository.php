@@ -39,4 +39,12 @@ class InMemoryRepository
     public function nextIdentity(): string {
         return Uuid::uuid4();
     }
+
+    public function storageFor($repository): InMemoryRepository {
+        $type = get_class($repository);
+        if (! $this->models->has($type)) {
+            $this->models->put($type, new static());
+        }
+        return $this->models->get($type);
+    }
 }

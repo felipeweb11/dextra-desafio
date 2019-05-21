@@ -35,7 +35,15 @@ trait HasIngredients
         return $this;
     }
 
-    public function removeIngredient(Ingredient $ingredient) {
-        $this->ingredients->remove($ingredient->getId());
+    public function removeIngredient(Ingredient $ingredient, int $quantity = 1) {
+        if ($snackIngredient = $this->ingredients->get($ingredient->getId())) {
+            $newQuantity = $snackIngredient->getQuantity() - $quantity;
+            if ($newQuantity > 0) {
+                $snackIngredient->setQuantity($newQuantity);
+            } else {
+                $this->ingredients->remove($ingredient->getId());
+            }
+        }
+        return $this;
     }
 }

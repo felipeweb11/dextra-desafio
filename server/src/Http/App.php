@@ -16,87 +16,127 @@ use App\SnackSale\Infrastructure\Persistence\InMemoryCustomerRepository;
 use App\SnackSale\Infrastructure\Persistence\InMemoryCustomSnackRepository;
 use App\SnackSale\Infrastructure\Persistence\InMemoryIngredientRepository;
 use App\SnackSale\Infrastructure\Persistence\InMemoryPromotionRepository;
+use App\SnackSale\Infrastructure\Persistence\InMemoryRepository;
 use App\SnackSale\Infrastructure\Persistence\InMemorySnackMenuRepository;
 use App\SnackSale\Infrastructure\Persistence\InMemorySnackRepository;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
+use League\Fractal;
 use League\Route\Router;
 use League\Route\Strategy\ApplicationStrategy;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class App
 {
     /**
-     * @var Container
+     * @var App
      */
-    private $container;
+    private static $instance;
 
     /**
-     * @var Router
+     * @var InMemoryRepository
      */
-    private $router;
+    private $storage;
 
+    /**
+     * Application seeders
+     *
+     * @var array
+     */
     private $seeders = [
         PopulateDefaultData::class
     ];
 
+    private $booted = false;
+
     public function __construct()
     {
-        $this->configureContainer();
+        $this->storage = new InMemoryRepository;
     }
 
-    private function configureContainer()
+    private function configureContainer(ServerRequestInterface $request)
     {
-        $this->container = new Container();
-        $this->container->delegate(new ReflectionContainer);
+        $container = new Container();
+        $container->delegate(new ReflectionContainer);
 
-        $this->container->add(ContainerInterface::class, $this->container);
-        $this->container->add(CustomerRepository::class, $this->container->get(InMemoryCustomerRepository::class));
-        $this->container->add(CustomSnackRepository::class, $this->container->get(InMemoryCustomSnackRepository::class));
-        $this->container->add(IngredientRepository::class, $this->container->get(InMemoryIngredientRepository::class));
-        $this->container->add(SnackMenuRepository::class, $this->container->get(InMemorySnackMenuRepository::class));
-        $this->container->add(SnackRepository::class, $this->container->get(InMemorySnackRepository::class));
-        $this->container->add(PromotionRepository::class, $this->container->get(InMemoryPromotionRepository::class));
+        $container->share(InMemoryRepository::class, $this->storage);
+        $container->share(ContainerInterface::class, $container);
+        $container->share(CustomerRepository::class, $container->get(InMemoryCustomerRepository::class));
+        $container->share(CustomSnackRepository::class, $container->get(InMemoryCustomSnackRepository::class));
+        $container->share(IngredientRepository::class, $container->get(InMemoryIngredientRepository::class));
+        $container->share(SnackMenuRepository::class, $container->get(InMemorySnackMenuRepository::class));
+        $container->share(SnackRepository::class, $container->get(InMemorySnackRepository::class));
+        $container->share(PromotionRepository::class, $container->get(InMemoryPromotionRepository::class));
 
-        $this->container->add(SnackPriceCalculator::class, function() {
-            $promotions = $this->container->get(PromotionRepository::class)->all();
+        $container->share(SnackPriceCalculator::class, function() use ($container) {
+            $promotions = $container->get(PromotionRepository::class)->all();
             $baseCalculator = new IngredientSumSnackPriceCalculator;
             return new PromotionalSnackPriceCalculator($baseCalculator, $promotions);
         });
+
+        $container->share(Fractal\Manager::class, function() use ($request) {
+            $manager = new Fractal\Manager();
+            $manager->setSerializer(new Fractal\Serializer\ArraySerializer);
+            $params = $request->getQueryParams();
+            if (isset($params['include'])) {
+                $manager->parseIncludes($params['include']);
+            }
+            return $manager;
+        });
+
+        return $container;
     }
 
-    private function configureRouter()
+    public function dispatch(ServerRequestInterface $request): ResponseInterface
+    {
+        $container = $this->configureContainer($request);
+        $this->bootIfNotBooted($container);
+        $router = $this->configureRouter($container);
+        return $router->dispatch($request);
+    }
+
+    private function configureRouter(ContainerInterface $container)
     {
         $strategy = new ApplicationStrategy;
-        $strategy->setContainer($this->container);
-        $this->router = new Router;
-        $this->router->setStrategy($strategy);
-        $this->mapRoutes();
+        $strategy->setContainer($container);
+        $router = new Router;
+        $router->setStrategy($strategy);
+        $this->mapRoutes($router);
+        return $router;
     }
 
-    private function mapRoutes()
+    private function mapRoutes(Router $router)
     {
-        $this->router->get('/api/snacks/menu', 'App\Http\Api\Controllers\SnackController::getDefaultSnackMenu');
-        $this->router->post('/api/snacks/custom', 'App\Http\Api\Controllers\SnackController::createCustomSnack');
+        $router->get('/api/ingredients', 'App\Http\Api\Controllers\IngredientController::all');
+        $router->get('/api/promotions', 'App\Http\Api\Controllers\PromotionController::all');
+        $router->get('/api/snacks/menu', 'App\Http\Api\Controllers\SnackController::getDefaultSnackMenu');
+        $router->post('/api/snacks/custom', 'App\Http\Api\Controllers\SnackController::createCustomSnack');
+        $router->get('/api/snacks/custom/{id:uuid}', 'App\Http\Api\Controllers\SnackController::getCustomSnack');
+        $router->post('/api/snacks/custom/{id:uuid}/ingredients', 'App\Http\Api\Controllers\SnackController::addCustomSnackIngredient');
+        $router->delete('/api/snacks/custom/{id:uuid}/ingredients', 'App\Http\Api\Controllers\SnackController::removeCustomSnackIngredient');
     }
 
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
-
-    public function getRouter(): Router
-    {
-        $this->configureRouter();
-        return $this->router;
-    }
-
-    public function seed()
+    private function runSeeders(ContainerInterface $container)
     {
         foreach ($this->seeders as $seederClass) {
-            $seeder = $this->container->get($seederClass);
+            $seeder = $container->get($seederClass);
             $seeder->run();
         }
+    }
+
+    private function bootIfNotBooted(ContainerInterface $container)
+    {
+        if (! $this->booted) {
+            $this->runSeeders($container);
+            $this->booted = true;
+        }
+    }
+
+    public static function instance()
+    {
+        return static::$instance ? static::$instance : static::$instance = new static();
     }
 
 }

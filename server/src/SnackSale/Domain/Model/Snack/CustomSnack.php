@@ -34,14 +34,4 @@ class CustomSnack extends Entity implements SnackInterface
     {
         $this->customer = $customer;
     }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'customer' => $this->getCustomer()->toArray(),
-            'ingredients' => $this->getIngredients()->toArray()
-        ];
-    }
 }

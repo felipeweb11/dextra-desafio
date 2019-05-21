@@ -11,7 +11,7 @@ trait InMemoryStorage
 
     public function __construct(InMemoryRepository $storage)
     {
-        $this->storage = $storage;
+        $this->storage = $storage->storageFor($this);
     }
 
     public function nextIdentity(): string

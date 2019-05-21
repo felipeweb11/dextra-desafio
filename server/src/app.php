@@ -2,14 +2,11 @@
 
 require __DIR__.'/../vendor/autoload.php';
 
-$app = new \App\Http\App();
-$app->seed();
-
-$server = new React\Http\Server(function (Psr\Http\Message\ServerRequestInterface $request) use ($app) {
+$server = new React\Http\Server(function (Psr\Http\Message\ServerRequestInterface $request) {
     try {
-        return $app->getRouter()->dispatch($request);
+        return App\Http\App::instance()->dispatch($request);
     } catch (Exception | Error | Throwable $e) {
-        return new \React\Http\Response(500, [], $e->getMessage());
+        return new React\Http\Response(500, [], $e->getMessage());
     }
 });
 

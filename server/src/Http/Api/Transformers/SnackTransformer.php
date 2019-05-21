@@ -19,11 +19,13 @@ class SnackTransformer extends Fractal\TransformerAbstract {
         $this->priceCalculator = $priceCalculator;
     }
 
-    public function transform(Snack $menu)
+    public function transform(Snack $snack)
     {
         return [
-            'id' => $menu->getId(),
-            'name' => $menu->getName()
+            'id' => $snack->getId(),
+            'name' => $snack->getName(),
+            'image' => $snack->getImage(),
+            'price' => formatMoney($this->priceCalculator->calcSalePrice($snack))
         ];
     }
 

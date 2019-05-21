@@ -4,10 +4,9 @@ namespace App\SnackSale\Domain\Model\Snack;
 
 use App\SnackSale\Domain\Model\Snack\Ingredient\Ingredient;
 use App\Support\Collection;
-use App\Support\Contracts\Arrayable;
 use Money\Money;
 
-interface SnackInterface extends Arrayable
+interface SnackInterface
 {
     public function getName();
     public function getIngredients(): Collection;

@@ -5,7 +5,7 @@ services:
     image: nginx:1.15
     container_name: nginx
     volumes:
-      - "./nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "./docker/nginx/nginx.conf:/etc/nginx/nginx.conf"
     ports:
       - "80:80"
     depends_on:
@@ -17,7 +17,7 @@ services:
     working_dir: /var/app
     container_name: node-client
     volumes:
-      - "../client:/var/app"
+      - "./client:/var/app"
     expose:
       - "3000/tcp"
     environment:
@@ -26,10 +26,10 @@ services:
 
   php-backend:
     build:
-      context: ./php
+      context: ./docker/php
     container_name: php-backend
     volumes:
-      - "../server:/var/app"
+      - "./server:/var/app"
     expose:
       - "3000/tcp"
     environment:

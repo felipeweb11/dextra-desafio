@@ -2,13 +2,10 @@
 
 namespace App\Support;
 
-use App\Support\Contracts\Arrayable;
-use App\Support\Contracts\Jsonable;
 use ArrayIterator;
 use IteratorAggregate;
-use Traversable;
 
-class Collection implements Arrayable, Jsonable, IteratorAggregate
+class Collection implements IteratorAggregate
 {
     private $items;
 
@@ -34,7 +31,12 @@ class Collection implements Arrayable, Jsonable, IteratorAggregate
 
     public function get($key)
     {
-        return isset($this->items[$key]) ? $this->items[$key] : null;
+        return $this->has($key) ? $this->items[$key] : null;
+    }
+
+    public function has($key)
+    {
+        return isset($this->items[$key]);
     }
 
     public function put($key, $value)
@@ -73,21 +75,6 @@ class Collection implements Arrayable, Jsonable, IteratorAggregate
     public function count()
     {
         return count($this->items);
-    }
-
-    public function toArray(): array
-    {
-        return $this->map(function($item) {
-            if ($item instanceof Arrayable) {
-                return $item->toArray();
-            }
-            return $item;
-        })->all();
-    }
-
-    public function toJson(int $options = 0): string
-    {
-        return json_encode($this->toArray(), $options);
     }
 
     public function intersect(Collection $other)

@@ -5,6 +5,7 @@ namespace App\SnackSale\Domain\Model\Snack;
 use App\SnackSale\Domain\Model\Entity;
 use App\SnackSale\Domain\Model\Snack\Ingredient\Ingredient;
 use InvalidArgumentException;
+use Money\Money;
 
 class SnackIngredient extends Entity
 {
@@ -47,12 +48,8 @@ class SnackIngredient extends Entity
         $this->quantity = $quantity;
     }
 
-    public function toArray(): array
+    public function getTotal(): Money
     {
-        return [
-            'ingredient' => $this->getIngredient()->toArray(),
-            'quantity' => $this->getQuantity()
-        ];
+        return Money::BRL($this->getIngredient()->getPrice() * $this->getQuantity() * 100);
     }
-
 }

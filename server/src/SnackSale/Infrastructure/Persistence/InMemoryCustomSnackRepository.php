@@ -11,7 +11,7 @@ class InMemoryCustomSnackRepository implements CustomSnackRepository
 
     public function find(string $id): CustomSnack
     {
-        return $this->find($id);
+        return $this->storage->find($id);
     }
 
     public function save(CustomSnack $snack): CustomSnack

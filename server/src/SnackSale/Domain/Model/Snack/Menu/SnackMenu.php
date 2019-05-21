@@ -25,12 +25,4 @@ class SnackMenu extends Entity
     {
         return $this->snacks;
     }
-
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->name,
-            'snacks' => $this->snacks->toArray(),
-        ];
-    }
 }

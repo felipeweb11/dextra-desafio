@@ -3,6 +3,7 @@
 namespace App\Http\Api\Transformers;
 
 use App\SnackSale\Domain\Model\Snack\Menu\SnackMenu;
+use Psr\Container\ContainerInterface;
 use League\Fractal;
 
 class SnackMenuTransformer extends Fractal\TransformerAbstract {
@@ -10,6 +11,13 @@ class SnackMenuTransformer extends Fractal\TransformerAbstract {
     protected $defaultIncludes = [
       'snacks'
     ];
+
+    private $container;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
   
     public function transform(SnackMenu $menu)
     {
@@ -21,7 +29,7 @@ class SnackMenuTransformer extends Fractal\TransformerAbstract {
 
     public function includeSnacks(SnackMenu $menu)
     {
-        return $this->collection($menu->getSnacks(), new SnackTransformer);
+        return $this->collection($menu->getSnacks(), $this->container->get(SnackTransformer::class));
     }
 
 }

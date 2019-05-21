@@ -35,18 +35,9 @@ class Customer extends Entity
         return $this->email;
     }
 
-    public function createCustomSnack($snackId): CustomSnack {
-        $snack = new CustomSnack($this, $snackId);
+    public function createCustomSnack(): CustomSnack {
+        $snack = new CustomSnack($this);
         $this->customSnacks->push($snack);
         return $snack;
-    }
-
-    public function toArray(): array
-    {
-       return [
-           'id' => $this->getId(),
-           'name' => $this->name,
-           'custom_snacks' => $this->customSnacks->toArray()
-       ];
     }
 }

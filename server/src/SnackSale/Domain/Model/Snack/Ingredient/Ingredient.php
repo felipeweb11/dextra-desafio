@@ -9,11 +9,13 @@ class Ingredient extends Entity
 {
     private $name;
     private $price;
+    private $image;
 
-    public function __construct(string $name, Money $price)
+    public function __construct(string $name, Money $price, string $image = null)
     {
         $this->name = $name;
         $this->price = $price;
+        $this->image = $image;
     }
 
     public function getName(): string {
@@ -32,12 +34,13 @@ class Ingredient extends Entity
         $this->price = $newPrice;
     }
 
-    public function toArray(): array
+    public function getImage():? string
     {
-        return [
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'price' => $this->getPrice(),
-        ];
+        return $this->image;
+    }
+
+    public function setImage(string $image): void
+    {
+        $this->image = $image;
     }
 }

@@ -12,10 +12,12 @@ class Snack extends Entity implements SnackInterface
     use HasIngredients, HasCalculatedSalePrice;
 
     private $name;
+    private $image;
 
-    public function __construct(string $name, Collection $ingredients = null)
+    public function __construct(string $name, Collection $ingredients = null, string $image = null)
     {
         $this->name = $name;
+        $this->image = $image;
         $this->ingredients = new Collection;
         if ($ingredients) {
             $this->setIngredients($ingredients);
@@ -30,12 +32,14 @@ class Snack extends Entity implements SnackInterface
         $this->name = $newName;
     }
 
-    public function toArray(): array
+    public function getImage():? string
     {
-        return [
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'ingredients' => $this->getIngredients()->toArray()
-        ];
+        return $this->image;
     }
+
+    public function setImage(string $image): void
+    {
+        $this->image = $image;
+    }
+
 }

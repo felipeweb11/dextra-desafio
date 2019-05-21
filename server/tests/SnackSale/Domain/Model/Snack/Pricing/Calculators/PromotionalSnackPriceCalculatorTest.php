@@ -14,7 +14,6 @@ use Tests\TestCase;
 
 class PromotionalSnackPriceCalculatorTest extends TestCase
 {
-
     /**
      * @test
      */
