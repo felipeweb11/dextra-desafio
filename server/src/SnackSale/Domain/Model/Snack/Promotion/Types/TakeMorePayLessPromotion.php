@@ -81,13 +81,4 @@ class TakeMorePayLessPromotion extends Promotion implements PromotionInterface
         $discountCount = $snackIngredient->getQuantity() - $quantityToPay;
         return $snackIngredient->getIngredient()->getPrice()->multiply($discountCount);
     }
-
-    public function toArray(): array
-    {
-        return array_merge(parent::toArray(), [
-            'ingredient' => $this->ingredient,
-            'occurrence_number' => $this->occurrenceNumber,
-            'customer_pay_for' => $this->customerPayFor,
-        ]);
-    }
 }

@@ -62,13 +62,4 @@ class CombineAndPayLessPromotion extends Promotion implements PromotionInterface
             ->multiply($this->discountPercent)
             ->divide(100);
     }
-
-    public function toArray(): array
-    {
-        return array_merge(parent::toArray(), [
-            'should_contain' => $this->shouldContain,
-            'should_not_contain' => $this->shouldNotContain,
-            'discount_percent' => $this->discountPercent,
-        ]);
-    }
 }

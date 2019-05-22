@@ -61,8 +61,9 @@ class PromotionalSnackPriceCalculatorTest extends TestCase
             ->portionOfIngredient($beefBurger)
             ->customerPayFor(2);
 
+        $promotions = new Collection([$lightPromotion, $muchCheese, $muchBeef]);
         $ingredientCalculator = new IngredientSumSnackPriceCalculator;
-        $promotionCalculator = new PromotionalSnackPriceCalculator(new IngredientSumSnackPriceCalculator, new Collection([$lightPromotion, $muchCheese, $muchBeef]));
+        $promotionCalculator = new PromotionalSnackPriceCalculator($ingredientCalculator, $promotions);
 
         // Prices without promotion
         $this->assertEquals(Money::BRL(650), $ingredientCalculator->calcSalePrice($xBacon));
